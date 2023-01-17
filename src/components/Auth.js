@@ -1,6 +1,80 @@
 import React from 'react'
+import { Box, Input, Modal } from "@mui/material";
+import {
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  updateProfile,
+} from "firebase/auth";
+import { useState, useEffect } from "react";
+import { auth } from "../firebase";
+import Button from "@mui/material/Button";
 
-function Auth() {
+function Auth({open, setOpen, openSignIn, setOpenSignIn, user, setUser}) {
+
+  const style = {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: "30%",
+    bgcolor: "background.paper",
+    border: "2px solid #000",
+    boxShadow: 24,
+    p: 4,
+  };
+
+
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (authUser) => {
+      if (authUser) {
+        setUser(authUser);
+      } else {
+        setUser(null);
+      }
+    });
+
+    return () => {
+      unsub();
+    };
+  }, [user, username]);
+
+  // Custom functions
+  const signUp = (event) => {
+    event.preventDefault();
+
+    createUserWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        // Signed in
+        return updateProfile(userCredential.user, {
+          displayName: username,
+        });
+      })
+      .catch((error) => {
+        alert(error.message);
+      });
+
+    setOpen(false);
+  };
+
+  const signIn = (event) => {
+    event.preventDefault();
+
+    signInWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+      })
+      .catch((error) => {
+        alert(error.message);
+      });
+
+    setOpenSignIn(false);
+  };
+
   return (
     <div>
     <Modal open={open} onClose={() => setOpen(false)}>
